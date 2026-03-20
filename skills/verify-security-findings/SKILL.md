@@ -114,6 +114,12 @@ alwaysApply: false
 
 > 更完整的表格式速查见 **references/verify-tables.md**（含 Step 0～6 与漏洞类别详细表），验证时可按需加载。主流程与 CONTRACT 以本 SKILL.md 为准。
 
+### 项目特定规则（当前项目：Synora）
+
+- 在 **Synora** 项目中，`evaluation/` 目录代码默认视为本地评测工具链，不属于外部用户直接攻击面。
+- 对 `evaluation/` 相关 finding，若无“线上服务/API/后台任务直接调用 evaluation 代码”的确凿证据，不得判 `✅确认`。
+- 该类 finding 默认按 `⚠️降级` 或 `💡KNOWN RISK` 处理，并在结论中明确标注“内部评测链路风险”。
+
 ### Step 0 — 项目上下文采集清单
 
 - 技术栈与框架版本
