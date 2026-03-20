@@ -117,8 +117,8 @@ alwaysApply: false
 ### 项目特定规则（当前项目：Synora）
 
 - 在 **Synora** 项目中，`evaluation/` 目录代码默认视为本地评测工具链，不属于外部用户直接攻击面。
-- 对 `evaluation/` 相关 finding，若无“线上服务/API/后台任务直接调用 evaluation 代码”的确凿证据，不得判 `✅确认`。
-- 该类 finding 默认按 `⚠️降级` 或 `💡KNOWN RISK` 处理，并在结论中明确标注“内部评测链路风险”。
+- 对 `evaluation/` 相关 finding，若无“线上服务/API/后台任务直接调用 evaluation 代码”的确凿证据，默认直接判 `❌ FALSE POSITIVE`（非外部攻击面）。
+- 仅在存在明确线上调用证据时，才按常规 Step 1～6 继续验证与定级。
 
 ### Step 0 — 项目上下文采集清单
 
