@@ -1,6 +1,6 @@
 # 漏洞类型与 CWE 对照表 — ZOOM Security Two Level Mapping
 
-> 生成 Jira 安全报告时，根据漏洞现象从下表选取**一级分类**与**二级 CWE**，填入报告的「漏洞类型」项。优先选用与漏洞最贴合的二级 CWE；若无直接对应可选用该一级下的 Generic 或最接近项。
+> 生成 Jira 安全报告时，根据漏洞现象从下表选取**一级分类**与**二级分类**（表中「二级 CWE」列），填入报告的「漏洞类型」项。优先选用与漏洞最贴合的二级分类；若无直接对应可选用该一级下的 Generic 或最接近项。
 
 ---
 
@@ -319,4 +319,4 @@
 
 ---
 
-**使用说明**：报告中「漏洞类型」填写格式建议为：`一级分类 (CWE-XXX)` 或 `二级名称 (CWE-XXX)`，例如 `Injection (CWE-89)`、`Improper Authentication (CWE-306)`。
+**使用说明**：报告中「漏洞类型」填写格式建议为：`一级分类 / 二级分类 (CWE-XXX)`（CWE 与表中所选二级行一致），例如 `Injection / SQL Injection (CWE-89)`、`Improper Authentication / Missing Authentication for Critical Function (CWE-306)`。

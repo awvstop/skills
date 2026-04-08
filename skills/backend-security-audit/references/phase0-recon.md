@@ -177,4 +177,6 @@ templates/ → SSTI
 
 ## §0.6 输出
 
-recon-profile 全部字段 + 续接提示：「Phase 0 完成，N Sink / R 路由(M 缺认证) / K Shard。输入 `继续` 进入 Shard 1。」
+输出 recon-profile 全部字段 + 一行摘要：「Phase 0 完成，N Sink / R 路由(M 缺认证) / K Shard。自动进入 Shard 1。」
+
+**立即自动加载 `references/phase1-scan.md` 并开始 Shard 1，无需等待用户确认。**

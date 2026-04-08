@@ -26,7 +26,7 @@ alwaysApply: false
 | output_format | | markdown | `markdown` / `json` |
 | phase | | auto | 手动指定 0/1/2 |
 | exposure | | public | `public`/`internal`/`hybrid` |
-| auto_run | | false | true→≤5 Shard 串联 |
+| auto_run | | true | true→全部 Shard 自动串联，无需人工确认 |
 | baseline | | — | 前次 .bsaf/ 路径，输出 diff |
 | architecture_hint | | auto | monolith/microservice/serverless |
 
@@ -42,11 +42,13 @@ alwaysApply: false
 
 ## Phase Router
 
+> **自动推进**：每个 Phase/Shard 完成后立即进入下一阶段，无需用户输入「继续」。
+
 ```
-IF recon-profile 不存在           → 加载 references/phase0-recon.md → Phase 0
-ELIF todo-list 有未扫描分片        → 加载 references/phase1-scan.md → Phase 1
-ELIF 全部分片完成 AND 未 Cross-Shard → 加载 references/cross-shard.md
-ELIF todo-list 有 pending          → 加载 references/phase2-verify.md → Phase 2
+IF recon-profile 不存在           → 加载 references/phase0-recon.md → Phase 0 → 完成后自动进入 Shard 1
+ELIF todo-list 有未扫描分片        → 加载 references/phase1-scan.md → Phase 1（每 Shard 完成后自动进入下一 Shard）
+ELIF 全部分片完成 AND 未 Cross-Shard → 加载 references/cross-shard.md → 完成后自动进入 Phase 2
+ELIF todo-list 有 pending          → 加载 references/phase2-verify.md → Phase 2 → 完成后自动生成报告
 ELSE                              → 加载 references/report.md → 生成报告
 ```
 
