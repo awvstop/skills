@@ -55,6 +55,9 @@ alwaysApply: false
 - **示例**：`Injection / SQL Injection (CWE-89)`、`Improper Authentication / Missing Authentication for Critical Function (CWE-306)`、`Cross-Site Request Forgery / Cross-Site Request Forgery (CSRF) (CWE-352)`、`Sensitive Information Exposure / Information Exposure Through an Error Message (CWE-209)`、`Improper Access Control / Insecure Direct Object Reference (IDOR) (CWE-639)`。
 - **注意**：优先选用与漏洞现象最贴合的**二级分类**；若无直接对应则选用该一级下的 Generic 或最接近项；不得编造 CWE 编号。
 
+- **硬性校验（必须）**：生成报告文件前，`漏洞类型` 必须且只能有一行，且严格匹配 `一级分类 / 二级分类 (CWE-XXX)`；`CWE-XXX` 必须与所选二级分类编号一致。
+- **禁止项**：禁止输出不在映射表中的自造分类；禁止仅写 `CWE-XXX` 或仅写一级分类；禁止使用模糊占位（如 `Misc.`、`其他`）代替已存在映射。
+
 ---
 
 ### Summary
@@ -121,6 +124,17 @@ alwaysApply: false
 ---
 
 ## 后续指令
+
+---
+
+## 生成前自检（必做）
+
+- `漏洞类型` 是否严格为 `一级分类 / 二级分类 (CWE-XXX)` 单行格式。
+- `一级分类` 与 `二级分类` 是否均来自 `references/vuln-type-cwe-mapping.md`。
+- `CWE-XXX` 是否与所选二级分类编号完全一致。
+- 对话回复是否遵循 CONTRACT：写入成功仅回路径，不回贴正文。
+- 若用户指出格式不符合：必须覆盖修正原报告文件，并在对话仅回复修正后的路径。
+
 
 - 用户说「再生成一份」「按同一格式再写一个漏洞」→ 对下一个漏洞生成**新报告文件**，文件名仍由新标题生成。
 - 用户一次提供多个漏洞（如粘贴审计报告中的 V-001、V-002…）→ 为**每个漏洞生成独立报告**，分别写入 `report/`，文件名各由该漏洞标题生成。
