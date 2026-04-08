@@ -35,7 +35,7 @@
 | Web API | 路由注册表 + 中间件链 + 网关配置 |
 | 桌面应用 | 监听地址(localhost?) + IPC机制 + CSWSH |
 | 移动端 | deeplink/intent暴露面 + WebView桥接 |
-| 微服务内部 | 是否仅限 service mesh 内部调用 |
+| 微服务内部 | 是否仅限 service mesh 内部调用；消息队列/事件总线（Kafka/SQS/RabbitMQ 等）需确认是否存在外部可注入的消费路径（Consumer ACL、Topic 权限、公开 Webhook 触发），无则视为内部可达 |
 | CLI工具 | 输入来源是否外部可控（参数/stdin/环境变量） |
 | Serverless | 触发器类型(HTTP/事件) + API Gateway配置 |
 
