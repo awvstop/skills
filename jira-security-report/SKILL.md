@@ -1,5 +1,5 @@
 ---
-name: Jira Security Report
+name: jira-security-report
 description: >
   根据已发现的安全漏洞生成用于 Jira 的安全缺陷报告（中文、工程化、可落单）。
   Triggers: 生成报告，生成 Jira 安全报告, 安全漏洞报告, Jira 工单, jira security report, 把漏洞整理成报告, 生成安全缺陷工单, 漏洞报告模板。

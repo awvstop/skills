@@ -1,7 +1,7 @@
 ---
-name: Backend Security Audit (BSAF v3.6)
+name: backend-security-audit
 description: >
-  高覆盖后端安全审计，优先发现高风险问题，产出证据链。
+  BSAF v3.6。高覆盖后端安全审计，优先发现高风险问题，产出证据链。
   仅审计后端/服务端（API、业务逻辑、数据访问、中间件、服务间通信）。
   Triggers: 后端安全审计, backend security audit, API审计, 服务端审计, 后端review, GraphQL审计, WebSocket审计, 微服务审计。
   用户请求「前端审计」时不适用。

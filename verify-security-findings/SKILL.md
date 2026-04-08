@@ -1,5 +1,5 @@
 ---
-name: Verify Security Findings
+name: verify-security-findings
 description: >
   对 AI 扫描/审计产出的安全风险逐条验证，排除误报，确认真实可利用漏洞。不修改项目代码。
   Triggers: 验证扫描结果, 验证安全风险, 验证漏洞, 验证下漏洞, 验证下bug, 验证下这些漏洞, verify findings, 复核漏洞, 排除误报, 验证审计结果, 安全风险复核, verify security findings。

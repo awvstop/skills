@@ -1,5 +1,5 @@
 ---
-name: Frontend Security Audit (CEVF v6)
+name: frontend-security-audit
 description: >
   仅审计前端/浏览器端代码（CEVF v6）。Scoped to frontend only；后端请用「后端安全审计」Skill。
   **入口：用户只需说「扫描当前项目」「前端安全审计」「对当前项目执行前端安全审计」即启动全自动流程**，无需指定路径或 scope。
