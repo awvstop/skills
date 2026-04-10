@@ -86,8 +86,10 @@ alwaysApply: false
 
 ### POC
 
-- **内容**：结合代码数据流，给出真实可利用的 POC/EXP，参数要结合代码分析，真实不捏造。如果poc分多个步骤，按照步骤123这样列清楚。
-- **注意**：若无法给出，此段落**不输出**（可省略该节）。
+- **内容**：结合代码数据流，给出真实可利用的 POC/EXP，参数要结合代码分析，真实不捏造。如果 PoC 分多个步骤，按步骤 1、2、3 列清楚。
+- **HTTP 请求格式（强制）**：凡涉及 HTTP 请求的步骤，**必须**以 Burp Suite Raw 格式呈现，含请求行（方法 + 路径 + 协议版本）、必要 Header（Content-Type、Authorization、Cookie 等）及完整 Body；Host 填 `<target>`；占位符用 `<placeholder>` 标注。**所有字段（路径参数、Query 参数、Body 字段名及类型）须逐一回溯代码（路由定义、Controller、DTO/Model）确认，不得凭印象捏造**。
+- **非 HTTP 漏洞**（如 SQL Injection 直接注入、命令注入 payload、SSRF URL 等）：给出可直接使用的最小化 payload，同样须与代码实际输入点对应。
+- **注意**：若无法给出真实可利用步骤，此段落**不输出**（可省略该节）。
 
 ---
 
