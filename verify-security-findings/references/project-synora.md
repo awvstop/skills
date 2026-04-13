@@ -10,10 +10,11 @@
 - `git remote -v`（在仓库根执行）输出中含 `synora`
 - 仓库根目录 `README.md` / `README` 标题或首段明确出现项目名 **Synora**
 - 根目录 `package.json`（或同等元数据）的 `name` / `description` 中含 `synora`（不区分大小写）
+- 当前验证批次中存在**文件路径含 `evaluation/` 的 finding**，且用户未否认 Synora 身份（此时立即加载本文件全部规则，包括 `evaluation/` 攻击面与 sandbox 严重度；仓库级强信号（目录名/git remote/README/package.json）须在 Step 0 内补充核查并记入【依据】，无法确认时标注「仓库级信号待确认」但不阻塞规则生效）
 
 **弱信号**（**单独不足以**认定；仅作辅证或与强信号并用）：
 
-- 仅存在顶层 `evaluation/` 等目录（其它仓库也可能有）
+- 仅存在顶层 `evaluation/` 目录但当前批次无 finding 路径命中该目录（其它仓库也可能有）
 
 **不叠加**：用户在对话中**明确否定**（如「不是 Synora」「通用仓库」）时，即使路径像 Synora 也不应用本文件。
 
@@ -25,10 +26,18 @@
 
 ## evaluation/ 与外部攻击面
 
+**Finding 路径预分类（Synora 专属，Step 0 完成后、Step 1 开始前执行）**：确认为 Synora 工作区后，扫描本批所有 finding 的文件路径；含 `evaluation/` 片段的**自动标记**为「内部工具链候选」，在 Step 1 中优先核查以下两点：
+
+① 是否有非 `evaluation/` 的生产模块对该文件存在 `import / require / 直接调用`；
+② 是否有线上 API 或后台任务的调用链可达该代码。
+
+两项均无确凿代码证据 → 直接判 `❌ FP（非外部攻击面）`，不进入 Step 2～6；任一项有证据 → 继续常规流程。**禁止仅凭路径名结案**，须已读相关文件。
+
 - `evaluation/` 目录代码默认视为**本地评测工具链**，不属于外部用户直接攻击面。
-- 对 `evaluation/` 相关 finding，若无「线上服务 / API / 后台任务**直接调用** evaluation 代码」的确凿证据，默认判 **`❌ FALSE POSITIVE`**（非外部攻击面）。
-- **仍须已读**该 finding 涉及的**具体文件路径**（或等价片段），确认归属 `evaluation/` 且无线上调用线索后，方可适用本默认 FP；**禁止**仅凭路径名像 `evaluation/` 而未打开文件即结案。
+- **仍须已读**该 finding 涉及的**具体文件路径**，确认归属 `evaluation/` 且无线上调用线索后，方可适用本默认 FP。
 - 仅在存在**明确线上调用证据**时，才按常规 Step 1～6 继续验证与定级。
+
+**汇总自检（Synora 专属）**：验证汇总时，若存在文件路径含 `evaluation/` 的 ✅确认 finding，**自动触发该条 Step 1 重验**：确认是否有生产代码调用证据；无证据则改判 ❌ FP 并更新汇总计数。
 
 ## Sandbox 环境与严重度（Synora）
 
