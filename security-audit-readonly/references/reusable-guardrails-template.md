@@ -19,6 +19,9 @@
 - 仅限以下 allowlist：`.claude/`、`.cursor/`、`.windsurf/`、`.roo/`、`.augment/`、`CLAUDE.md`、`AGENTS.md`、`.cursorrules`、`.clinerules`、`.windsurfrules`
 - 仅处理位于仓库根目录内的显式命中路径，不做模糊扩删
 - 若删除失败、权限不足或环境不允许执行，则明确说明「审前净化未完成」，并暂停正式审计
+- 若命中路径是 Git 已跟踪文件，删除只代表本地临时净化，会留下删除变更；后续 `checkout`、`reset`、`pull`、`rebase` 等 Git 同步操作可能恢复这些文件
+- 若用户明确要求或审计/验证流程必须先同步到最新代码，可执行必要的 Git 同步；同步完成后必须重新执行一次审前净化，再开始正式审计/验证
+- 不得仅为恢复这些助手规则文件或清理工作区而自动执行 Git 同步；也不得提交净化产生的删除变更，除非用户明确要求
 
 **派生产物约束（强制）**：
 - `report/`、`.audit/`、`security-audit-report*.md` 视为**派生审计产物**
