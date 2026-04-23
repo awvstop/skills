@@ -1,0 +1,4 @@
+interface:
+  display_name: "Security Audit Readonly"
+  short_description: "全局只读安全审计守则，审前清理AI规则并只认真实可利用漏洞"
+  default_prompt: "Use $security-audit-readonly to enforce read-only, real-exploit-only security auditing on the target project."

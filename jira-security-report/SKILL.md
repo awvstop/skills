@@ -23,14 +23,41 @@ alwaysApply: false
 - **禁止**：自动搜索、扫描或读取项目中未指定的 .md 或其他文件；不得基于「当前项目」「打开文件」「工作区」自动推断或查找审计报告；
 - **若上下文中无漏洞信息**（既无对话内容也无用户指定文件）：**仅用一两句话**提示用户补充漏洞描述、粘贴审计结论或指定文件；**不编造**漏洞或代码位置，不主动查任何 md。
 
+**Jira 去重辅助（适用于用户显式要求去重时）：**
+- 用户说「报告去重」「和 Jira 已有单对比」「检查是否已报 Jira」时，使用 `scripts/zoom_jira_dedupe.py`
+- 输入 Jira 已有单来源固定为用户手动更新的 `~/Zoom.mhtml`
+- 脚本职责仅是**提取并打包材料**，不得在脚本内判断重复；重复判断由 LLM 在对话中完成
+- 提取结果默认**仅输出到 stdout**；若用户显式要求落盘，只允许写到**仓库外路径**
+- **禁止**将 `Zoom.mhtml` 提取结果、LLM 去重判断结果、Jira 标题/Description/漏洞类型缓存写入当前项目或 `report/` 目录
+
+**手动去重（仅用户显式触发，LLM 判定）：**
+- 生成报告后**不得自动**读取 `~/Zoom.mhtml`，也不得自动准备 Jira 去重材料
+- 仅当用户明确说「报告去重」「和 Jira 已有单对比」「检查是否已报 Jira」等去重请求时，才执行两阶段去重
+- 第一阶段运行 `scripts/zoom_jira_dedupe.py summary --mhtml ~/Zoom.mhtml --report-dir <project>/report --format markdown`
+- 第一阶段脚本只输出「本地待提单报告标题/漏洞类型」与「Jira 已有单标题/漏洞类型（优先 CWE 字段，缺失时从 Description 抽取 CWE）」，不输出正文/Description，不写任何缓存文件
+- 第一阶段 LLM 只能找 `candidate pairs`，不得给出 confirmed duplicate；候选筛选应偏召回，标题、模块、对象、攻击面、漏洞类型/CWE 任一明显接近都可进入候选
+- 第二阶段仅对第一阶段候选项运行 `scripts/zoom_jira_dedupe.py bundle --mhtml ~/Zoom.mhtml --report-dir <project>/report --report-path <candidate-report> --jira-key <candidate-jira-key> --format markdown`
+- 第二阶段脚本只展开候选报告正文与候选 Jira Description 到 stdout/对话，不写任何缓存文件
+- 第二阶段 LLM 必须基于脚本输出材料自行判断：`confirmed duplicates`、`possible duplicates`、`no match`
+- 第二阶段 LLM 判断时以 Description 与报告正文的语义一致性为主，漏洞类型/CWE 和标题只作辅助；同类 CWE 不能单独证明重复，必须结合触发路径、影响对象、攻击方式与修复点
+- 若 LLM 判断存在 confirmed duplicates，必须提醒用户这些报告疑似已报 Jira，建议在真正提单前去除重复项
+- 若仅存在 possible duplicates，标为“疑似重复”并提示用户人工复核
+
 **输出（文件与内容）：**
 - 唯一正式产出：项目根目录 **`report/`** 下 Markdown；目录不存在则创建；**写入失败**时完整报告输出到对话。
 - **一份报告 = 一个漏洞**；多漏洞时各写独立文件。文件名由该漏洞**标题**生成 `$(标题).md`：将空格及非法文件名字符 `/` `\` `?` `*` `:` `|` `<` `>` `"` 统一替换为 `-`，去掉其余不宜作文件名字符；去除首尾空格与 `.`；文件名（不含 `.md`）建议截断至 120 字以内。若命中 Windows 保留名（如 `CON`、`PRN`、`AUX`、`NUL`、`COM1`～`COM9`、`LPT1`～`LPT9`），需追加后缀（如 `-report`）后再写入。**重名**时追加短日期（如 `-20250310`）或序号（如 `-2`）避免静默覆盖。
 - 报告须含**修复开发人员（Suggested Assignee）**；推断优先级、格式与「待指定」规则见下节「修复开发人员」。
 
+**report/ 目录定位（强制说明）：**
+- `report/` 下文件是本 Skill 生成的**派生产物**
+- 这些文件用于沟通、归档、提单，不是源码实现
+- 其他审计/验证 Skill **不得**将 `report/` 目录内容作为代码实现证据；最多只能把它当作 finding 线索来源
+- 同理，`.audit/`、`.bsaf/`、`security-audit-report*.md` 等审计导出物也应被视为派生产物，而非源码实现本身
+
 **对用户的对话输出（节省 token，必须遵守）：**
 - **禁止**过程性、铺垫性话术（如「正在生成…」「报告如下：」「以上为报告内容」等）；不解释将写几份、不先逐条列举漏洞再写报告。
-- **写入成功**：仅一句短确认（如「已写入 `report/$(文件名).md`」）或只给路径；**不在对话中再贴**完整报告正文。
+- **写入成功**：默认仅一句短确认（如「已写入 `report/$(文件名).md`」）或只给路径；**不在对话中再贴**完整报告正文。
+- **写入成功且用户本次显式要求去重并由 LLM 命中**：在路径确认后，追加一到两句短提示：列出 `confirmed duplicates` 或 `possible duplicates` 的报告路径与对应 Jira key；提醒用户在提单前去除重复项。不要贴长 JSON。
 - **写入失败**：仅输出报告正文（8 部分 + CVSS 最后一行），前后无前言、无总结句。
 - **多份报告**：仅一句列出路径，如「已写入 report/ 下 N 份报告：xxx.md, yyy.md」。
 - **报告正文**：仅 **8 部分 + CVSS 最后一行**（结构见下），不增删章节；**中文**；专业、简洁、工程化、面向开发可执行；**仅描述现象与影响**，不断言「设计本意」；**不编造**描述、路径、代码片段与影响结论。
@@ -153,4 +180,9 @@ alwaysApply: false
 - 用户说「再生成一份」「按同一格式再写一个漏洞」→ 对下一个漏洞生成**新报告文件**，文件名仍由新标题生成。
 - 用户一次提供多个漏洞（如粘贴审计报告中的 V-001、V-002…）→ 为**每个漏洞生成独立报告**，分别写入 `report/`，文件名各由该漏洞标题生成。
 - 用户说「改成英文」→ 除 CVSS 链接外，Summary/修复建议等可改为英文，结构不变，语法正确，安全专业。
+- 用户说「报告去重」「和 Jira 已有单对比」→ 手动触发两阶段去重：
+  - 先运行 `python scripts/zoom_jira_dedupe.py summary --mhtml ~/Zoom.mhtml --report-dir <project>/report --format markdown`
+  - 由 LLM 仅筛选 `candidate pairs`，不得在第一阶段确认重复
+  - 对候选项再运行 `python scripts/zoom_jira_dedupe.py bundle --mhtml ~/Zoom.mhtml --report-dir <project>/report --report-path <candidate-report> --jira-key <candidate-jira-key> --format markdown`
+  - 最终由 LLM 在对话中判断重复，不由脚本裁决；若用户要求保存提取材料，必须显式指定**仓库外**路径到 `--out`
 - **优先级**：后续指令与默认规则冲突时，以用户最新明确指令为准（如语言要求）。
