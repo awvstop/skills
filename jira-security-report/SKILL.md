@@ -2,7 +2,7 @@
 name: jira-security-report
 description: >
   根据已发现的安全漏洞生成用于 Jira 的安全缺陷报告（中文、工程化、可落单）。
-  Triggers: 生成报告，生成 Jira 安全报告, 安全漏洞报告, Jira 工单, jira security report, 把漏洞整理成报告, 生成安全缺陷工单, 漏洞报告模板。
+  Triggers: 生成报告，生成 Jira 安全报告, 安全漏洞报告, Jira 工单, jira security report, 把漏洞整理成报告, 生成安全缺陷工单, 漏洞报告模板, 优化安全报告, 修改安全报告, 改安全报告, 优化漏洞报告, 修改漏洞报告, 改 Jira 报告, 调整报告格式, 完善漏洞报告, 重写报告, refine security report, update security report。
   输入仅接受对话中的漏洞信息或用户 @ 指定的文件；禁止自动搜索/读取项目中未指定的 .md。产出为 report/ 下 Markdown；全文规则见 CONTRACT。
 alwaysApply: false
 ---
@@ -160,7 +160,7 @@ alwaysApply: false
 
 ---
 
-## 生成前自检（必做）
+## 写入前自检（生成与修改均适用，必做）
 
 - `漏洞类型` 是否严格为 `一级分类 / 二级分类 (CWE-XXX)` 单行格式。
 - `一级分类` 与 `二级分类` 是否均来自 `references/vuln-type-cwe-mapping.md`。
@@ -187,4 +187,7 @@ alwaysApply: false
   - 对候选项再运行 `python scripts/zoom_jira_dedupe.py bundle --mhtml ~/Zoom.mhtml --report-dir <report目录绝对路径> --report-path <candidate-report> --jira-key <candidate-jira-key> --format markdown`
   - 最终由 LLM 在对话中判断重复，不由脚本裁决；若用户要求保存提取材料，必须显式指定**仓库外**路径到 `--out`
 - 用户说「看看 Zoom.mhtml 里有哪些单」→ 可使用 `extract` 子命令仅提取 Jira 已有单列表（不需要本地 report 目录）：`python scripts/zoom_jira_dedupe.py extract --mhtml ~/Zoom.mhtml --format markdown`；输出到 stdout，不落盘。
+- 用户对**已有报告**说「优化」「修改」「调整」「改一下」「完善」等 → 先确认目标文件：
+  - 若上下文或用户 @ 已明确文件路径 → 读取该文件，应用用户要求的变更，通过**写入前自检**，**覆盖写入**原文件；对话仅回复修正后路径，不贴正文。
+  - 若无法确定目标文件（上下文无路径、未 @ 指定）→ **仅提示用户指定文件**（如 `@report/xxx.md`），不猜测、不扫描 `report/` 目录，不编造修改内容。
 - **优先级**：后续指令与默认规则冲突时，以用户最新明确指令为准（如语言要求）。
