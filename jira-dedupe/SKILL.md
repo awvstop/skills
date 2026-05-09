@@ -28,9 +28,22 @@ alwaysApply: false
 
 ---
 
+## 参数
+
+| 参数 | 必填 | 说明 |
+|------|------|------|
+| mhtml_path | ✅ | Jira 导出文件路径，默认 `~/Zoom.mhtml` |
+| report_dir | ✅ | 本地报告目录路径 |
+| report_path | ❌ | 第二阶段指定单个报告 |
+| jira_key | ❌ | 第二阶段指定 Jira 工单键 |
+| strict | ❌ | 严格模式；缺输入时直接失败 |
+| format | ❌ | `markdown`（默认）/ `json` |
+
+---
+
 ## 两阶段去重流程
 
-### 第一阶段 — 候选筛选
+### Step 1 — 候选筛选
 
 1. 运行：
    ```bash
@@ -43,7 +56,7 @@ alwaysApply: false
 3. LLM 基于摘要**仅筛选 candidate pairs**（偏召回：标题、模块、对象、攻击面、漏洞类型/CWE 任一明显接近即入选）
 4. **禁止**在第一阶段给出 confirmed duplicate 结论
 
-### 第二阶段 — 全文比对
+### Step 2 — 全文比对
 
 1. 对第一阶段每个候选项运行：
    ```bash
@@ -100,7 +113,7 @@ alwaysApply: false
     --mhtml ~/Zoom.mhtml \
     --format markdown
   ```
-  输出到 stdout，不落盘。
+  输出到 stdout，不修改项目代码。
 
 - 用户指定单个报告去重（如 `@report/xxx.md 查重`）→ 第一阶段可跳过，直接运行 bundle 对该报告全量比对。
 

@@ -97,6 +97,9 @@ fi
 sync_one() {
   local dest_root="$1"
   if [[ "$DRY_RUN" -eq 1 ]]; then
+    if [[ -d "$REPO_ROOT/_shared" ]]; then
+      echo "  [DryRun] 同步: _shared -> $dest_root/_shared"
+    fi
     for src in "${SKILL_DIRS[@]}"; do
       local name
       name="$(basename "$src")"
@@ -105,6 +108,10 @@ sync_one() {
     return
   fi
   mkdir -p "$dest_root"
+  if [[ -d "$REPO_ROOT/_shared" ]]; then
+    rm -rf "$dest_root/_shared"
+    cp -R "$REPO_ROOT/_shared" "$dest_root/_shared"
+  fi
   for src in "${SKILL_DIRS[@]}"; do
     local name
     name="$(basename "$src")"

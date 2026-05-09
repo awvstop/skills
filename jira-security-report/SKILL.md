@@ -15,7 +15,14 @@ alwaysApply: false
 
 ## CONTRACT
 
-**角色：** 资深应用安全工程师，熟悉代码审计与漏洞修复协作、常见 Web/后端安全漏洞及企业研发流程。输出**直接用于创建 Jira 安全缺陷工单**，供开发在一个迭代内修复。
+**角色：** 资深应用安全工程师，不修改项目代码，仅生成报告文件。熟悉代码审计与漏洞修复协作、常见 Web/后端安全漏洞及企业研发流程。输出**直接用于创建 Jira 安全缺陷工单**，供开发在一个迭代内修复。
+
+| 参数 | 必填 | 默认 | 说明 |
+|------|:----:|------|------|
+| 漏洞来源 | ✅ | — | 对话中漏洞描述 或 用户 @ 指定的文件 |
+| output_dir | | `report/` | 报告输出目录 |
+| severity_override | | — | 手动指定严重性（覆盖 CVSS 计算） |
+| include_assignee | | true | 是否推断修复开发人员 |
 
 **输入（仅接受以下两种，必须遵守）：**
 - **方式一**：当前对话中用户已输入/粘贴的漏洞描述、审计结论或漏洞列表；
@@ -27,8 +34,6 @@ alwaysApply: false
 - 去重功能已独立为 `jira-dedupe` Skill（触发词：报告去重、检查重复、查重、dedupe reports）
 - 本 Skill **不执行**去重逻辑；生成报告后不得自动读取 `~/Zoom.mhtml`
 - 若用户在报告生成后说「报告去重」，由 `jira-dedupe` Skill 接管
-- 固定交接回复模板：`请执行 jira-dedupe：对 report/ 与 ~/Zoom.mhtml 做两阶段去重，输出 confirmed duplicate / possible duplicate / no match。`
-- 若 `jira-dedupe` Skill 不可用：仅提示用户该 Skill 缺失，并继续保持“只生成报告、不执行去重”
 
 **输出（文件与内容）：**
 - 唯一正式产出：项目根目录 **`report/`** 下 Markdown；目录不存在则创建；**写入失败**时完整报告输出到对话。

@@ -73,12 +73,25 @@ function Get-GlobalSkillTargets {
 
 function Sync-SkillsToTarget {
   param(
+    [string] $RepoRoot,
     [string[]] $SourceSkillPaths,
     [string] $DestRoot,
     [switch] $WhatIf
   )
   if (-not $WhatIf) {
     New-Item -ItemType Directory -Path $DestRoot -Force | Out-Null
+  }
+  $sharedSrc = Join-Path $RepoRoot '_shared'
+  if (Test-Path -LiteralPath $sharedSrc -PathType Container) {
+    $sharedDest = Join-Path $DestRoot '_shared'
+    if ($WhatIf) {
+      Write-Host "  [WhatIf] 同步: _shared -> $sharedDest"
+    } else {
+      if (Test-Path -LiteralPath $sharedDest) {
+        Remove-Item -LiteralPath $sharedDest -Recurse -Force
+      }
+      Copy-Item -LiteralPath $sharedSrc -Destination $sharedDest -Recurse -Force
+    }
   }
   foreach ($src in $SourceSkillPaths) {
     $name = Split-Path -Leaf $src
@@ -145,7 +158,7 @@ if ($targets.Count -eq 0) {
 foreach ($t in $targets) {
   Write-Host "[$($t.Label)] -> $($t.Path)"
   $paths = @($skillDirs | ForEach-Object { $_.FullName })
-  Sync-SkillsToTarget -SourceSkillPaths $paths -DestRoot $t.Path -WhatIf:$DryRun
+  Sync-SkillsToTarget -RepoRoot $repoRoot -SourceSkillPaths $paths -DestRoot $t.Path -WhatIf:$DryRun
   if (-not $DryRun) {
     Write-Host "  已完成覆盖安装。"
   }
