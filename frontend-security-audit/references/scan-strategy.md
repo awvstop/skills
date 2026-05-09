@@ -93,3 +93,26 @@ Step A+B合计计入该Sink行预算
 Phase 1读取代码时遇到以下模式 → 标记为TODO：
 - 硬编码JWT字符串字面量（见checks-credentials.md §jwt）
 - 上述高置信凭证模式出现在非grep扫描路径的文件中
+
+## Shard TODO 落盘（每 Shard Phase 1 自检完成后立即执行）
+
+将本 Shard 所有 TODO 条目 append 写入 `.bsaf/cevf-todo.md`（文件不存在则创建）。每行格式：
+
+```
+{id} | {priority} | {confidence} | {file→component} | {sink} | {source} | {trust} | {trace} | {status}
+```
+
+字段说明：
+- id：`S{N}-{seq}`，N 为当前 Shard 编号，seq 为该 Shard 内顺序编号，如 `S1-003`
+- priority：`P0`–`P5`
+- confidence：`high`/`medium`（含 traced/inferred/sink-only）
+- file→component：`src/components/Comment.vue→template`
+- sink：`v-html`/`innerHTML` 等
+- source：数据来源表达式
+- trust：`🔴`/`🟠`/`🟡`/`🟢`/`⚪`
+- trace：TRACE 摘要（单行）
+- status：`pending`
+
+示例：`S1-003 | P0 | high(traced) | src/components/Comment.vue→template | v-html | API(comment.content) | 🟡 | api.ts→store→Comment.vue | pending`
+
+写入后自动推进至下一 Shard 或 Cross-Shard，不输出到对话。

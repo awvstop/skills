@@ -214,8 +214,8 @@ spring-boot-starter-data-rest|@RepositoryRestResource|RepositoryRestConfiguratio
 ### @Transactional [噪声:中]
 @Transactional(?!.*rollbackFor)|this\.\w+\(.*@Transactional|private.*@Transactional
 
-### Singleton 可变状态 [噪声:高]
-@Controller|@Service|@Component|@Repository
+### Singleton 可变状态 [噪声:中]
+private\s+(?!final|static)[A-Za-z].*;\s*$
 
 ### Nacos/Sentinel [噪声:—]
 nacos|sentinel|@RefreshScope|@SentinelResource

@@ -8,8 +8,13 @@
 
 ## HTTP 安全头 / CORS
 
-HSTS/X-Content-Type-Options/X-Frame-Options。CORS *+敏感 API → 🔴。
-请求体大小未限制(JSON>10MB) → 🟡 DoS。
+HSTS/X-Content-Type-Options/X-Frame-Options。请求体大小未限制(JSON>10MB) → 🟡 DoS。
+
+**CORS 风险判定**（须区分以下场景，避免误报）：
+- `Origin 动态反射`（`res.setHeader('ACAO', origin)`）+ `credentials=true` → 任意跨域读取 🔴
+- `allowedOrigins("*")` + `allowCredentials(true)` → Spring CORS 框架会拒绝此组合（保护），但手动实现可能不检查 → 🔴
+- `Access-Control-Allow-Origin: *` **不带 credentials** → 浏览器不允许跨域请求携带凭证，仅对公开只读 API 构成信息泄露风险 → 🟡（非 🔴）
+- Origin 正则前缀/后缀匹配（`origin.endsWith('.trusted.com')`）→ `evil.trusted.com` 绕过 🟠
 
 **CORS 精细化**：
 - `Access-Control-Allow-Origin: null` → file:// / sandboxed iframe 跨域请求成功 🔴

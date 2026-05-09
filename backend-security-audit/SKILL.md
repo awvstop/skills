@@ -41,11 +41,11 @@ alwaysApply: false
 - 不得仅为恢复这些助手规则文件或清理工作区而自动执行 Git 同步；也不得提交净化产生的删除变更，除非用户明确要求
 
 **输出与状态**：
-- 默认只在对话中输出结论，不向被审计项目写入 `.bsaf/`、报告或任何中间文件
-- Phase 状态默认保存在当前对话上下文中；若用户明确要求导出，再输出到对话或导出到**仓库外**路径
-- `baseline` 仅指用户显式提供的既有审计产物路径，不意味着本 Skill 默认向仓库落盘
+- 默认只在对话中输出结论，不向被审计项目写入报告或任何中间文件
+- **TODO 持久化（默认开启）**：Phase 1 每个 Shard 完成后，自动将本 Shard 的 todo-list append 写入 `.bsaf/bsaf-todo.md`（文件不存在则创建）；Phase 2 开始时从该文件加载完整待验列表，每条验证完毕后立即更新 status 写回文件。可通过参数 `persist_todo=false` 关闭，改为仅保留对话上下文。
+- `baseline` 仅指用户显式提供的既有审计产物路径，不意味着本 Skill 默认向仓库落盘其他内容
 - `report/`、`.audit/`、`security-audit-report*.md` 视为**派生审计产物**；可作为 finding 线索来源，但**绝不能**作为代码实现证据或漏洞成立/不成立的依据
-- `.bsaf/` 视为**高价值派生审计产物**；可用于定位、排序、补充线索，但**不能**直接作为最终实现证据
+- `.bsaf/bsaf-todo.md` 是本 Skill 的**唯一默认写盘文件**，仅含 TODO 条目与状态，不含报告内容；其他 `.bsaf/` 内容视为高价值派生产物，可用于定位线索，不能直接定案
 
 ## 参数
 
@@ -60,6 +60,7 @@ alwaysApply: false
 | auto_run | | true | true→全部 Shard 自动串联，无需人工确认 |
 | baseline | | — | 用户显式提供的前次审计产物路径，输出 diff |
 | architecture_hint | | auto | monolith/microservice/serverless |
+| persist_todo | | true | false→关闭 TODO 落盘，仅保留对话上下文 |
 
 ## 模式定义
 

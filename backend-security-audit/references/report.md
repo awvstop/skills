@@ -58,7 +58,56 @@
 
 ## 修复方向映射
 
-SQLi→参数化 | BOLA→绑定 req.user.id | SSRF→白名单+DNS 校验+禁重定向 | Mass Assignment→DTO whitelist | SSTI/Proto→RCE→禁用户输入进模板/深合并 | Cmd→execFile 参数数组 | 路径遍历→resolve+startsWith | 文件上传→magic bytes+随机名 | 弱PRNG→crypto.randomBytes | 认证缺失→添加中间件 | 时序→timingSafeEqual | ReDoS→re2 | XXE→禁外部实体 | 反序列化→safe_load | OAuth→state+PKCE+redirect 验证 | Webhook→签名+重放防护 | MyBatis ${}→替换为#{},动态列名白名单 | SpEL→SimpleEvaluationContext | Actuator→限制exposure仅health/info+Security保护 | Fastjson→升级Fastjson2+禁autoType | Shiro绕过→升级≥1.9.0+StrictHttpFirewall | Jackson defaultTyping→@JsonTypeInfo(NAME)+白名单 | @RequestBody Entity→DTO映射 | @Transactional→rollbackFor=Exception.class+避免同类调用+禁private | VT上下文泄露→ContextPropagatingTaskDecorator+ScopedValue替代ThreadLocal | 泛型注解绕过(CVE-2025-41248)→升级Spring Security≥6.4.11或子类重声明注解 | Dubbo反序列化→triple+protobuf或序列化白名单 | 不安全反射→白名单Map映射替代Class.forName | 开放重定向→白名单域名+禁//开头 | Spring AI注入→系统提示隔离+@Tool参数schema校验 | H2 Console→生产禁用spring.h2.console.enabled=false | 二阶注入→存入时净化+取出后进危险Sink前再校验 | Host Header→BASE_URL固定于配置禁用Host构造URL | Cache Deception→敏感API强制Cache-Control:private,no-store | Cache Poisoning→敏感头加入Vary或CDN cache key+敏感响应Cache-Control:private,no-store | Session Fixation→登录后regenerate session ID | JWT算法混淆→硬编码algorithms列表禁HS256(非对称场景) | SAML XSW→validateSignatureOnResponse覆盖整个Response | Method Override→禁用method-override中间件(REST API) | Groovy/ScriptEngine→禁用户输入直接eval,用规则DSL替代 | HTTP/2 Rapid Reset→升级服务端+配置maxConcurrentStreams限制+速率限制RST_STREAM | 反序列化Gadget Chain→SerialKiller白名单过滤+迁移JSON/Protobuf+配置jdk.serialFilter | Token Rotation→下发新token同时吊销旧token+验证JWT aud绑定目标服务 | 服务间认证→mTLS或JWT issuer+audience绑定+禁止仅内网假设 | K8s ServiceAccount→RBAC最小权限禁cluster-admin+Secret用valueFrom.secretKeyRef | Prompt Injection→系统提示与用户输入参数分离禁字符串拼接 | RAG投毒→外部文档嵌入前净化+元数据不控制工具调用 | 整数溢出→业务字段类型强验证+BigDecimal金融计算
+| 漏洞类型 | 修复方向 |
+|----------|----------|
+| SQLi | 参数化查询；禁字符串拼接 |
+| BOLA/IDOR | 查询条件绑定 req.user.id；复合路径逐级校验 |
+| SSRF | 协议+域名白名单；DNS 解析后 IP 校验；禁跟随重定向 |
+| Mass Assignment | DTO whitelist；ValidationPipe(whitelist:true) |
+| SSTI / Prototype→RCE | 禁用户输入进模板字符串；深合并用 Object.create(null) |
+| 命令注入 | execFile/spawn 参数数组；禁 shell:true 拼接 |
+| 路径遍历 | path.resolve + startsWith(base)；禁 ../ |
+| 文件上传 | magic bytes 校验 + 类型白名单 + 随机文件名 + 隔离目录 |
+| 弱随机 | crypto.randomBytes / SecureRandom |
+| 认证缺失 | 添加全局认证中间件；补 anyRequest().authenticated() |
+| 时序侧信道 | timingSafeEqual / compare_digest |
+| ReDoS | 改用 re2；避免嵌套量词 |
+| XXE | 禁外部实体；disallow-doctype-decl=true |
+| 反序列化 | safe_load；禁 enableDefaultTyping；SerialKiller 白名单 |
+| OAuth | state(CSPRNG)+PKCE(S256)+redirect_uri 严格校验 |
+| Webhook | HMAC 签名验证 + timestamp+nonce 重放防护 |
+| MyBatis ${} | 替换为 #{}；动态列名/ORDER BY 用白名单映射 |
+| SpEL 注入 | SimpleEvaluationContext；禁 parseExpression(userInput) |
+| Actuator 暴露 | exposure.include 仅 health/info；Security 保护其余端点 |
+| Fastjson autoType | 升级 Fastjson2；禁 autoType |
+| Shiro 路径绕过 | 升级 ≥1.9.0；启用 StrictHttpFirewall |
+| Jackson defaultTyping | @JsonTypeInfo(use=NAME) + 白名单 |
+| @RequestBody 直绑 Entity | 改用 DTO + 手动映射 |
+| @Transactional 误用 | rollbackFor=Exception.class；避免同类内调用；禁 private 方法标注 |
+| VT 上下文泄露 | ContextPropagatingTaskDecorator；ScopedValue 替代 ThreadLocal |
+| CVE-2025-41248 泛型绕过 | 升级 Spring Security ≥6.4.11 或子类重声明注解 |
+| Dubbo 反序列化 | 改用 triple+protobuf；或配置序列化白名单 |
+| 不安全反射 | 白名单 Map 映射替代 Class.forName(userInput) |
+| 开放重定向 | 白名单域名；禁 // 开头 URL |
+| Spring AI 注入 | 系统提示与用户输入参数化分离；@Tool 参数 schema 校验 |
+| H2 Console | spring.h2.console.enabled=false（生产） |
+| 二阶注入 | 存入时净化；取出后进危险 Sink 前再校验 |
+| Host Header 注入 | BASE_URL 固定于配置；禁用 Host header 构造 URL |
+| Cache Deception | 敏感 API 强制 Cache-Control: private, no-store |
+| Cache Poisoning | 影响响应的头加入 Vary；敏感响应加 Cache-Control: private, no-store |
+| Session Fixation | 登录成功后 regenerate session ID |
+| JWT 算法混淆 | 硬编码 algorithms 列表；非对称场景禁接受 HS256 |
+| SAML XSW | validateSignatureOnResponse 覆盖整个 Response |
+| HTTP Method Override | REST API 禁用 method-override 中间件 |
+| Groovy/ScriptEngine | 禁用户输入直接 eval；改用规则 DSL |
+| HTTP/2 Rapid Reset | 升级服务端；配置 maxConcurrentStreams 限制 |
+| 反序列化 Gadget Chain | SerialKiller 白名单过滤；迁移 JSON/Protobuf；配置 jdk.serialFilter |
+| Token Rotation | 下发新 token 同时吊销旧 token；验证 JWT aud 绑定目标服务 |
+| 服务间认证 | mTLS 或 JWT issuer+audience 绑定；禁止仅内网假设 |
+| K8s ServiceAccount | RBAC 最小权限；Secret 用 valueFrom.secretKeyRef |
+| Prompt Injection | 系统提示与用户输入参数分离；禁字符串拼接进 prompt |
+| RAG 投毒 | 外部文档嵌入前净化；metadata 不控制工具调用 |
+| 整数溢出 | 业务字段类型强验证；金融计算用 BigDecimal |
 
 ## 已知局限（必须包含）
 

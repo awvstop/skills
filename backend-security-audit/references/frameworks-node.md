@@ -48,7 +48,7 @@
 
 ## Next.js / Nuxt 服务端安全
 
-- **Server Actions** (`"use server"`)：默认无 CSRF 保护（Next.js 14+ 有内置 origin check，但需验证配置）；action 内直接用 `cookies()` / `headers()` 须校验来源
+- **Server Actions** (`"use server"`)：Next.js 14+ 默认启用 origin check 作为 CSRF 缓解（非传统 CSRF token）；须验证是否被自定义配置禁用；action 内直接用 `cookies()` / `headers()` 须校验来源
 - **Server Components**：误将 secret 变量直传 Client Component → 泄露到客户端 bundle 🔴
 - **Route Handlers** (`app/api/**/route.ts`)：每个 export function = 入口点；检查 auth 包裹
 - **getServerSideProps / getStaticProps**：`params.id` 未校验直接查询 → BOLA；`query` 用于数据库 → 注入

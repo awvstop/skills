@@ -2,6 +2,14 @@
 
 > 每条 TODO 须输出判定卡后更新 status。
 
+## Phase 2 启动 — 加载 TODO 列表
+
+1. 读取 `.bsaf/bsaf-todo.md`；若文件不存在，从对话上下文重建并立即写入文件
+2. 统计 `pending` 条目总数，输出：「Phase 2 开始，共 N 条待验 TODO」
+3. **逐条处理**：每次只处理一条 TODO，验证完毕后立即将该条 status 更新为 `confirmed` / `excluded`（含原因）并写回 `.bsaf/bsaf-todo.md`，再处理下一条
+4. 禁止以「同根因」为由跳过 Step 0/1；同根因优化仅允许在 Step 2 开始之后节省重复阅读
+5. Phase 2 全部完成后输出：「Phase 2 完成，confirmed X / excluded Y / pending Z」；pending > 0 须列出原因
+
 ## Step 0 — 快速排除
 
 | 条件 | 标记 |

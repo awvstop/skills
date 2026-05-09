@@ -97,7 +97,6 @@
 
 | 二级 CWE | 说明 |
 |----------|------|
-| CWE-1021 | Improper Restriction of Rendered UI Layers or Frames |
 | CWE-250 | Execution with Unnecessary Privileges |
 | CWE-266 | Incorrect Privilege Assignment |
 | CWE-269 | Improper Privilege Management |

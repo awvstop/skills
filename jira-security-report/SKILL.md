@@ -33,10 +33,10 @@ alwaysApply: false
 **手动去重（仅用户显式触发，LLM 判定）：**
 - 生成报告后**不得自动**读取 `~/Zoom.mhtml`，也不得自动准备 Jira 去重材料
 - 仅当用户明确说「报告去重」「和 Jira 已有单对比」「检查是否已报 Jira」等去重请求时，才执行两阶段去重
-- 第一阶段运行 `scripts/zoom_jira_dedupe.py summary --mhtml ~/Zoom.mhtml --report-dir <project>/report --format markdown`
+- 第一阶段运行 `scripts/zoom_jira_dedupe.py summary --mhtml ~/Zoom.mhtml --report-dir <report目录绝对路径> --format markdown`
 - 第一阶段脚本只输出「本地待提单报告标题/漏洞类型」与「Jira 已有单标题/漏洞类型（优先 CWE 字段，缺失时从 Description 抽取 CWE）」，不输出正文/Description，不写任何缓存文件
 - 第一阶段 LLM 只能找 `candidate pairs`，不得给出 confirmed duplicate；候选筛选应偏召回，标题、模块、对象、攻击面、漏洞类型/CWE 任一明显接近都可进入候选
-- 第二阶段仅对第一阶段候选项运行 `scripts/zoom_jira_dedupe.py bundle --mhtml ~/Zoom.mhtml --report-dir <project>/report --report-path <candidate-report> --jira-key <candidate-jira-key> --format markdown`
+- 第二阶段仅对第一阶段候选项运行 `scripts/zoom_jira_dedupe.py bundle --mhtml ~/Zoom.mhtml --report-dir <report目录绝对路径> --report-path <candidate-report> --jira-key <candidate-jira-key> --format markdown`
 - 第二阶段脚本只展开候选报告正文与候选 Jira Description 到 stdout/对话，不写任何缓存文件
 - 第二阶段 LLM 必须基于脚本输出材料自行判断：`confirmed duplicates`、`possible duplicates`、`no match`
 - 第二阶段 LLM 判断时以 Description 与报告正文的语义一致性为主，漏洞类型/CWE 和标题只作辅助；同类 CWE 不能单独证明重复，必须结合触发路径、影响对象、攻击方式与修复点
@@ -142,6 +142,7 @@ alwaysApply: false
 ### 修复开发人员（Suggested Assignee）
 
 - **要求**：根据**漏洞代码**部分列出的文件路径与代码位置，推断建议的修复负责人姓名或账号，便于 Jira 工单指派。
+- **前提**：仅当被审计仓库在当前工作区或用户明确提供了 `repo_path` 时，才执行 Git 查询；否则直接填 **`待指定`**，不尝试推断。
 - **推断方式**（按优先级，能获取则填）：
   1. **Git 信息**：对漏洞涉及的文件（及漏洞所在行或相关函数）执行 `git log` / `git blame`，取**最近修改该处代码的提交者**（author 或 committer）作为建议负责人；多文件时取修改次数最多或与漏洞最相关文件的负责人，或填多人（逗号分隔）。
   2. **CODEOWNERS / 目录归属**：若项目有 `CODEOWNERS`、`OWNERS` 或类似配置，取漏洞文件路径匹配的负责人。
@@ -181,8 +182,9 @@ alwaysApply: false
 - 用户一次提供多个漏洞（如粘贴审计报告中的 V-001、V-002…）→ 为**每个漏洞生成独立报告**，分别写入 `report/`，文件名各由该漏洞标题生成。
 - 用户说「改成英文」→ 除 CVSS 链接外，Summary/修复建议等可改为英文，结构不变，语法正确，安全专业。
 - 用户说「报告去重」「和 Jira 已有单对比」→ 手动触发两阶段去重：
-  - 先运行 `python scripts/zoom_jira_dedupe.py summary --mhtml ~/Zoom.mhtml --report-dir <project>/report --format markdown`
+  - 先运行 `python scripts/zoom_jira_dedupe.py summary --mhtml ~/Zoom.mhtml --report-dir <report目录绝对路径> --format markdown`
   - 由 LLM 仅筛选 `candidate pairs`，不得在第一阶段确认重复
-  - 对候选项再运行 `python scripts/zoom_jira_dedupe.py bundle --mhtml ~/Zoom.mhtml --report-dir <project>/report --report-path <candidate-report> --jira-key <candidate-jira-key> --format markdown`
+  - 对候选项再运行 `python scripts/zoom_jira_dedupe.py bundle --mhtml ~/Zoom.mhtml --report-dir <report目录绝对路径> --report-path <candidate-report> --jira-key <candidate-jira-key> --format markdown`
   - 最终由 LLM 在对话中判断重复，不由脚本裁决；若用户要求保存提取材料，必须显式指定**仓库外**路径到 `--out`
+- 用户说「看看 Zoom.mhtml 里有哪些单」→ 可使用 `extract` 子命令仅提取 Jira 已有单列表（不需要本地 report 目录）：`python scripts/zoom_jira_dedupe.py extract --mhtml ~/Zoom.mhtml --format markdown`；输出到 stdout，不落盘。
 - **优先级**：后续指令与默认规则冲突时，以用户最新明确指令为准（如语言要求）。

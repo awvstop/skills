@@ -14,7 +14,7 @@ description: >
 
 若当前任务是后端审计、前端审计或扫描结果复核，继续使用对应专项 Skill；本 Skill 负责统一约束行为。
 
-后续新建安全类 Skill 时，优先复用 [`references/reusable-guardrails-template.md`](C:/Users/isk/Desktop/awvstop/skills/security-audit-readonly/references/reusable-guardrails-template.md) 中的模板段落，再按具体场景补充专项流程。
+后续新建安全类 Skill 时，优先复用 `references/reusable-guardrails-template.md` 中的模板段落，再按具体场景补充专项流程。跨 Skill 交接时（如 backend→verify→jira），参考 `references/severity-vocabulary-mapping.md` 进行严重性与信心词汇翻译。
 
 ## CONTRACT
 

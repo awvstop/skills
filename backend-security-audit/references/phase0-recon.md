@@ -74,8 +74,6 @@ trusted_proxy:
 | snakeyaml | < 2.0 | 🔴 反序列化 RCE |
 | commons-collections | 3.x / 4.0–4.1 | 🔴 反序列化 gadget（4.2+ 安全）|
 | commons-text | < 1.10.0 | 🔴 StringSubstitutor RCE |
-| netty | < 4.1.86 | 🟠 HTTP Smuggling/DoS |
-| spring-webmvc | < 5.3.18 / 6.0.7 | 🟠 Spring4Shell(CVE-2022-22965) |
 | xstream | < 1.4.20 | 🔴 反序列化 RCE |
 | shiro-core | < 1.9.0 | 🔴 路径绕过 |
 | netty | < 4.1.86 | 🟠 HTTP Smuggling/DoS；< 4.1.68 🔴 HTTP/2 DoS |

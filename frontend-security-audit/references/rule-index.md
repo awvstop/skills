@@ -11,7 +11,7 @@ innerHTML|outerHTML|insertAdjacentHTML|document\.write|eval\(|new Function|setTi
 
 ### React
 ```
-dangerouslySetInnerHTML|ref\.current\.innerHTML|__NEXT_DATA__|href=\{(?!['"]https?:)
+dangerouslySetInnerHTML|ref\.current\.innerHTML|__NEXT_DATA__|href=\{.*javascript:|href=\{.*dangerousUrl|href=\{.*userInput
 ```
 
 ### Vue

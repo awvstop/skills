@@ -2,12 +2,20 @@
 
 > Phase 2开始时加载。每条E1/E2 TODO必须输出判定卡，未填完禁止给出判定。
 
+## Phase 2 启动 — 加载 TODO 列表
+
+1. 读取 `.bsaf/cevf-todo.md`；若文件不存在，从对话上下文重建并立即写入文件
+2. 统计 `pending` 条目总数（内部记录，不输出到对话）
+3. **逐条处理**：每次只处理一条 TODO，验证完毕后立即将该条 status 更新为 `confirmed` / `excluded`（含原因）并写回 `.bsaf/cevf-todo.md`，再处理下一条
+4. 禁止以「同根因」为由跳过 Step 0/1；同根因优化仅允许在 Step 2 开始之后节省重复阅读
+5. 全部完成后在最终报告中输出统计：confirmed X / excluded Y / pending Z
+
 ## 判定卡格式（必须输出）
 
 ```
 | 字段 | 值 |
 |------|-----|
-| TODO# | T-001 |
+| TODO# | S1-001 |
 | Sink | v-html="comment.content" |
 | Sink上下文 | html_body |
 | Source | API(comment.content) |
