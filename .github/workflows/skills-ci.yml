@@ -44,3 +44,11 @@ jobs:
       - name: Validate SKILL semantic rules
         shell: bash
         run: python3 scripts/skill_semantic_lint.py
+
+      - name: Validate shared references
+        shell: bash
+        run: python3 scripts/check_shared_refs.py
+
+      - name: Run scripts tests
+        shell: bash
+        run: python3 -m pytest scripts/tests -q

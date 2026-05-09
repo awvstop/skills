@@ -41,6 +41,12 @@ bash -n install.sh
 powershell -NoProfile -Command "$null = [System.Management.Automation.Language.Parser]::ParseFile('install.ps1',[ref]$null,[ref]$null)"
 ```
 
+Pull 后建议执行：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\post_pull_check.ps1
+```
+
 并确认：
 - 新增 Skill 目录含 `SKILL.md`
 - 相关路径在文档中可达（尤其 `scripts/*`）

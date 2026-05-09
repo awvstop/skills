@@ -15,6 +15,7 @@ class JiraDedupeCliTests(unittest.TestCase):
         return subprocess.run(
             ["python3", str(SCRIPT), *args],
             text=True,
+            encoding="utf-8",
             capture_output=True,
             check=False,
         )

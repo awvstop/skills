@@ -50,6 +50,10 @@ bash -n install.sh
 powershell -NoProfile -Command "$null = [System.Management.Automation.Language.Parser]::ParseFile('install.ps1',[ref]$null,[ref]$null)"
 ```
 
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\post_pull_check.ps1
+```
+
 ## jira-dedupe 快速用法
 
 前提：

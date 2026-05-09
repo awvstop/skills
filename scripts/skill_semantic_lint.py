@@ -11,6 +11,18 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SKILLS = sorted(ROOT.glob("*/SKILL.md"))
 REF_RE = re.compile(r"references/([\w\-.]+\.md)")
+REL_MD_RE = re.compile(r"^(?:\./|\../).+\.md$")
+
+
+def resolve_ref_text(path: Path) -> str:
+    text = path.read_text(encoding="utf-8")
+    line = text.strip()
+    if "\n" in text or not REL_MD_RE.fullmatch(line):
+        return text
+    candidate = (path.parent / line).resolve()
+    if candidate.exists():
+        return candidate.read_text(encoding="utf-8")
+    return text
 
 
 def lint_one(path: Path) -> list[str]:
@@ -39,7 +51,7 @@ def lint_one(path: Path) -> list[str]:
     # Accept shared guardrails reference as satisfying readonly constraint
     guardrails_ref = skill_dir / "references" / "guardrails.md"
     if not has_readonly_code and guardrails_ref.exists():
-        guardrails_text = guardrails_ref.read_text(encoding="utf-8")
+        guardrails_text = resolve_ref_text(guardrails_ref)
         if "不修改" in guardrails_text:
             has_readonly_code = True
         if "仅允许" in guardrails_text or "唯一允许" in guardrails_text:
