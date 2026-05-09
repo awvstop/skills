@@ -1,0 +1,43 @@
+name: Skills CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate skill directories
+        shell: bash
+        run: |
+          set -euo pipefail
+          count=0
+          while IFS= read -r -d '' f; do
+            dir="$(dirname "$f")"
+            echo "Found skill: $dir"
+            count=$((count + 1))
+          done < <(find . -mindepth 2 -maxdepth 2 -type f -name SKILL.md -print0 | sort -z)
+
+          if [ "$count" -eq 0 ]; then
+            echo "No SKILL.md found under root subdirectories."
+            exit 1
+          fi
+
+      - name: Validate install.sh syntax
+        shell: bash
+        run: bash -n install.sh
+
+      - name: Validate install.ps1 syntax
+        shell: pwsh
+        run: |
+          $parseErrors = $null
+          [void][System.Management.Automation.Language.Parser]::ParseFile("install.ps1", [ref]$null, [ref]$parseErrors)
+          if ($parseErrors -and $parseErrors.Count -gt 0) {
+            $parseErrors | ForEach-Object { Write-Error $_.Message }
+            exit 1
+          }
+

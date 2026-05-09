@@ -1,0 +1,19 @@
+From: <Saved by Blink>
+Subject: Jira Export
+MIME-Version: 1.0
+Content-Type: multipart/related; boundary="----=_NextPart_000_0000"
+
+------=_NextPart_000_0000
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+
+<html><body>
+<h3 class="formtitle">[ZOOM-123] <a href="/browse/ZOOM-123">SQL Injection in Orders API</a></h3>
+<table>
+  <tr><td><b>CWE:</b></td><td class="value">CWE-89</td></tr>
+  <tr><td><b>Bug Type:</b></td><td class="value">Injection</td></tr>
+</table>
+<td id="descriptionArea">Attacker can inject SQL via orderId. CWE-89.</td>
+</body></html>
+
+------=_NextPart_000_0000--

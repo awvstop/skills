@@ -41,6 +41,7 @@ FIELD_ROW_RE = re.compile(
 MARKDOWN_HEADING_RE = re.compile(r"^\s{0,3}#{1,6}\s+(.*)$", re.MULTILINE)
 MARKDOWN_SECTION_RE = re.compile(r"^\s{0,3}#{1,6}\s+(.+?)\s*$", re.MULTILINE)
 WHITESPACE_RE = re.compile(r"\s+")
+NON_WORD_RE = re.compile(r"[^\w]+", re.UNICODE)
 CWE_TEXT_RE = re.compile(r"\bCWE-\d+\b(?:\s*\([^)]+\))?", re.IGNORECASE)
 JIRA_FIELD_ALLOWLIST = {
     "Bug Type",
@@ -195,6 +196,12 @@ def compact_text(value: str, max_chars: int) -> str:
     return normalized[:max_chars].rstrip() + " ...[truncated]"
 
 
+def normalize_title(value: str) -> str:
+    normalized = WHITESPACE_RE.sub(" ", value).strip().lower()
+    normalized = NON_WORD_RE.sub(" ", normalized)
+    return WHITESPACE_RE.sub(" ", normalized).strip()
+
+
 def infer_vulnerability_type_from_text(value: str) -> str:
     seen: set[str] = set()
     cwes: list[str] = []
@@ -246,6 +253,7 @@ def issue_summary_to_dict(issue: JiraIssue) -> dict:
     return {
         "issue_key": issue.issue_key,
         "title": issue.title,
+        "normalized_title": normalize_title(issue.title),
         "vulnerability_type": issue.vulnerability_type,
     }
 
@@ -254,6 +262,7 @@ def report_summary_to_dict(report: ReportDoc) -> dict:
     return {
         "path": report.path,
         "title": report.title,
+        "normalized_title": normalize_title(report.title),
         "vulnerability_type": report.vulnerability_type,
     }
 
@@ -271,12 +280,14 @@ def render_markdown_summary(payload: dict) -> str:
         lines.append(f"### Report {index}")
         lines.append(f"Path: `{report['path']}`")
         lines.append(f"Title: {report['title']}")
+        lines.append(f"Normalized Title: {report.get('normalized_title') or '(missing)'}")
         lines.append(f"Vulnerability Type: {report.get('vulnerability_type') or '(missing)'}")
         lines.append("")
     lines.append("## Existing Jira Issues")
     for issue in payload["existing_jira_issues"]:
         lines.append(f"### {issue['issue_key']}")
         lines.append(f"Title: {issue['title']}")
+        lines.append(f"Normalized Title: {issue.get('normalized_title') or '(missing)'}")
         lines.append(f"Vulnerability Type / CWE: {issue.get('vulnerability_type') or '(missing)'}")
         lines.append("")
     lines.append("## LLM Task")
@@ -292,6 +303,14 @@ def render_markdown_bundle(payload: dict) -> str:
     lines.append("")
     lines.append("The script only extracted material. The LLM must decide duplicates.")
     lines.append("")
+    candidate_filters = payload.get("candidate_filters", {})
+    report_filters = candidate_filters.get("report_path") or []
+    jira_filters = candidate_filters.get("jira_key") or []
+    if report_filters or jira_filters:
+        lines.append("## Candidate Filters")
+        lines.append(f"Report Paths: {', '.join(report_filters) if report_filters else '(all)'}")
+        lines.append(f"Jira Keys: {', '.join(jira_filters) if jira_filters else '(all)'}")
+        lines.append("")
     lines.append("## Local Reports To Check")
     for index, report in enumerate(payload["local_reports"], start=1):
         lines.append(f"### Report {index}: {report['title']}")
@@ -388,6 +407,10 @@ def command_extract(args: argparse.Namespace) -> int:
 def command_summary(args: argparse.Namespace) -> int:
     issues = extract_issues(args.mhtml)
     reports = load_reports(args.report_dir, max_report_chars=1)
+    if args.strict and not reports:
+        raise ValueError(
+            f"Strict mode: no markdown report files found in report-dir: {args.report_dir}"
+        )
     payload = {
         "source_mhtml": str(args.mhtml),
         "report_dir": str(args.report_dir),
@@ -408,11 +431,27 @@ def command_summary(args: argparse.Namespace) -> int:
 def command_bundle(args: argparse.Namespace) -> int:
     issues = extract_issues(args.mhtml)
     reports = load_reports(args.report_dir, args.max_report_chars)
+    if args.strict and not reports:
+        raise ValueError(
+            f"Strict mode: no markdown report files found in report-dir: {args.report_dir}"
+        )
     issues = filter_issues(issues, args.jira_key)
     reports = filter_reports(reports, args.report_path)
+    if args.strict and args.jira_key and not issues:
+        raise ValueError(
+            f"Strict mode: no Jira issue matched provided --jira-key filters: {args.jira_key}"
+        )
+    if args.strict and args.report_path and not reports:
+        raise ValueError(
+            "Strict mode: no report matched provided --report-path filters"
+        )
     payload = {
         "source_mhtml": str(args.mhtml),
         "report_dir": str(args.report_dir),
+        "candidate_filters": {
+            "report_path": [str(path) for path in (args.report_path or [])],
+            "jira_key": args.jira_key or [],
+        },
         "jira_issue_count": len(issues),
         "report_count": len(reports),
         "local_reports": [report_to_dict(report) for report in reports],
@@ -455,6 +494,11 @@ def build_parser() -> argparse.ArgumentParser:
     summary_parser.add_argument("--out", type=Path)
     summary_parser.add_argument("--project-root", type=Path)
     summary_parser.add_argument("--format", choices=("json", "markdown"), default="markdown")
+    summary_parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="Fail when report-dir has no markdown reports.",
+    )
     summary_parser.set_defaults(func=command_summary)
 
     bundle_parser = subparsers.add_parser(
@@ -466,6 +510,11 @@ def build_parser() -> argparse.ArgumentParser:
     bundle_parser.add_argument("--out", type=Path)
     bundle_parser.add_argument("--project-root", type=Path)
     bundle_parser.add_argument("--format", choices=("json", "markdown"), default="markdown")
+    bundle_parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="Fail when report-dir is empty or candidate filters match nothing.",
+    )
     bundle_parser.add_argument("--max-description-chars", type=int, default=4000)
     bundle_parser.add_argument("--max-report-chars", type=int, default=8000)
     bundle_parser.add_argument(
